@@ -2,14 +2,30 @@ import { Injectable } from '@angular/core';
 import { Pokemon } from './pokemon.models';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, catchError, of, tap } from 'rxjs';
+import { AuthService } from '../auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PokemonService {
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private authService: AuthService) { }
   private apiBaseUrl = 'http://localhost:3000';
+
+  private getHeaders(): HttpHeaders {
+    const token = this.authService.getToken();
+    let headers = new HttpHeaders({
+      'Content-type': 'application/json'
+    });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`)
+    }
+    return headers;
+  }
+
+  private prepareOptions(): {headers:HttpHeaders} {
+    return {headers: this.getHeaders()};
+  }
   /**
    * Récupère une liste de tous les Pokémon depuis le serveur.
    * @returns Un Observable (un carton) qui émet un tableau d'objets Pokémon.
@@ -19,7 +35,7 @@ export class PokemonService {
    * - `catchError` est utilisé pour gérer les erreurs lors de la requête. En cas d'erreur, on affiche celle-ci et on renvoie un nouveau carton vide (tableau vide).
    */
   getPokemonList(): Observable<Pokemon[]> {
-    return this.http.get<Pokemon[]>(`${this.apiBaseUrl}/api/pokemons`).pipe(
+    return this.http.get<Pokemon[]>(`${this.apiBaseUrl}/api/pokemons`,this.prepareOptions()).pipe(
       tap( (response) => console.table(response) ),
       catchError((error) => {
         console.log(error);
@@ -36,7 +52,7 @@ export class PokemonService {
    * - `catchError` est utilisé pour gérer les erreurs lors de la requête. En cas d'erreur, on affiche celle-ci et on renvoie un carton contenant `undefined`.
   */
   getPokemonById(pokemonId: string): Observable<Pokemon|undefined> {
-    return this.http.get<Pokemon>(`${this.apiBaseUrl}/api/pokemons/${pokemonId}`).pipe(
+    return this.http.get<Pokemon>(`${this.apiBaseUrl}/api/pokemons/${pokemonId}`,this.prepareOptions()).pipe(
       tap( (response) => console.table(response) ),
       catchError((error) => {
         console.log(error);
@@ -46,11 +62,7 @@ export class PokemonService {
   }
 
   updatePokemon(updatedPokemon: Pokemon): Observable<null|undefined> {
-    const httpOptions = {
-      headers: new HttpHeaders({ 'Content-Type' : 'application/json'})
-    }
-
-    return this.http.put<null>(`${this.apiBaseUrl}/api/pokemons/${updatedPokemon._id}`, updatedPokemon, httpOptions).pipe(
+    return this.http.put<null>(`${this.apiBaseUrl}/api/pokemons/${updatedPokemon._id}`, updatedPokemon,this.prepareOptions()).pipe(
       tap( (response) => console.table(response) ),
       catchError((error) => {
         console.log(error);

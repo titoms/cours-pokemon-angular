@@ -26,11 +26,12 @@ export class AuthService {
     )
   }
 
-  getToken(): string | null {
-    return localStorage.getItem('token');
+  logout(): void {
+    localStorage.removeItem('token');
+    this.router.navigate(['/login']);
   }
 
-  logout() {
-    this.router.navigate(['/login']);
+  getToken(): string | null {
+    return localStorage.getItem('token');
   }
 }
