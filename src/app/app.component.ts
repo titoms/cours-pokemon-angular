@@ -8,13 +8,8 @@ import { AuthService } from './auth.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  isLoggedIn: boolean|undefined;
   constructor(public authService: AuthService) {}
 
-  ngOnInit() {
-    this.isLoggedIn = this.authService.isLoggedIn;
-  }
-  
   logout() {
     this.authService.logout();
   }

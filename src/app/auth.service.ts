@@ -1,36 +1,36 @@
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, delay, of, tap } from 'rxjs';
+import { Observable, catchError, delay, of, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  isLoggedIn: boolean = false;
+  private loginUrl = 'http://localhost:3000/api/users/login';
+  constructor(private router: Router, private httpClient: HttpClient) { }
 
-  constructor(private router: Router) { }
-
-  login(name:string, password:string): Observable<boolean> {
-
-    /**
-     * Normalement ici on a une requete POST vers le serveur en envoyant le name et le mdp 
-     * Ensuite, l'API va checker si le name et le mdp existe et si c'est le bon, 
-     * et en fonction de cela l'API retournera true ou false
-     */
-
-    let isLoggedIn = false; 
-    if(name == 'pikachu' && password == 'carapuce'){
-      isLoggedIn = true;
+  login(email:string, password:string): Observable<any> {
+    const httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type' : 'application/json'})
     }
-
-    return of(isLoggedIn).pipe(
-      delay(1000), 
-      tap(isLoggedIn => this.isLoggedIn = isLoggedIn)
+    return this.httpClient.post<string>(this.loginUrl, {email, password}, httpOptions).pipe(
+      tap(res => {
+        localStorage.setItem('token', res);
+        this.router.navigate(['/pokemons']);
+      }),
+      catchError(error => {
+        console.error('Login error', error);
+        return error;
+      })
     )
   }
 
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
+
   logout() {
-    this.isLoggedIn = false
     this.router.navigate(['/login']);
   }
 }

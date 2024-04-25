@@ -12,7 +12,7 @@ import { Router } from '@angular/router';
 export class LoginComponent {
 
   loginForm: FormGroup = new FormGroup({
-    'name': new FormControl(null, Validators.required),
+    'email': new FormControl(null, Validators.required),
     'password': new FormControl(null, Validators.required),
   })
   message: string|undefined;
@@ -22,17 +22,14 @@ export class LoginComponent {
   login() {
     this.message = 'Tentative de connexion en cours ...';
 
-    const name = this.loginForm.get('name')
+    const email = this.loginForm.get('email')
     const password = this.loginForm.get('password')
 
-    if(name?.value && password?.value){
-      this.authService.login(name.value, password.value)
-      .subscribe((isLoggedIn) => {
-        if(isLoggedIn) {
+    if(email?.value && password?.value){
+      this.authService.login(email.value, password.value)
+      .subscribe((res) => {
           this.router.navigate(['/pokemons'])
-        }else{
           this.loginForm.reset();
-        }
       })
     }else{
       this.message = 'Les champs sont obligatoires';
